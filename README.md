@@ -1,4 +1,4 @@
-# About
+# Find Your List
 MERN Stack w/ TypeScript project made with OMDb API that lets user's create a personal watch list
 
 <img src = "src/assets/preview.gif" />
