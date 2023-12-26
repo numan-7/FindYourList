@@ -144,7 +144,7 @@ form {
     border-radius: 0px 0.375rem 0.375rem 0px;
 }
 
-.search-btn:hover, .load-more-btn:hover{
+.search-btn:hover, .load-more-btn:hover:enabled{
     color: rgb(219, 190, 21);
     background: #131212;
 }
@@ -219,6 +219,11 @@ form {
     background: #1a1919;
     border-radius: 5px;
     border: none;
+}
+
+.load-more-btn:disabled{
+    opacity: 50%;
+    cursor: not-allowed;
 }
 
 .main-movie-container{

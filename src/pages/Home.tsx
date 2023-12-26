@@ -66,6 +66,7 @@ export default function Home() {
                 return response.json();
               })
             );
+            setHasMoreMovies(true)
             setMovies(moviesData);
           } else {
             if(page > 1) {
@@ -127,7 +128,7 @@ export default function Home() {
                     ))}
                     {hasMoreMovies && (
                         <div className = "btn-div">
-                            <button className="load-more-btn" onClick={() => loadMoreMovies(-1)}>
+                            <button disabled = {currentPage <= 1 ? true : false} className="load-more-btn" onClick={() => loadMoreMovies(-1)}>
                                 Prev Page
                             </button>
                             <button className="load-more-btn" onClick={() => loadMoreMovies(1)}>
