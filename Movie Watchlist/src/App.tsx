@@ -1,13 +1,23 @@
-import { useState, useEffect } from 'react'
-import Nav from './components/Nav'
+import {useEffect } from 'react'
+import ReactDOM from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import Home from './pages/Home';
+import Watchlist from './pages/Watchlist'
 import './index.css'
 
 function App() {
+
+  useEffect(() => {
+    document.title = "find your film"
+  },[])
+
   return (
-    <div>
-      <Nav />
-      <p>Hello....</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/watchlist" element={<Watchlist />} />
+      </Routes>
+    </BrowserRouter>    
   )
 }
 

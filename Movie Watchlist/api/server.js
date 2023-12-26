@@ -23,14 +23,14 @@ app.get('/watchlist', async(req, res) => {
 
 app.post('/watchlist/new', async(req, res) => {
     const watchlist = new Watchlist({
-        Poster: req.body.Poster,
-        Title: req.body.Title,
-        Rated: req.body.Rated,
-        imdbRating: req.body.imdbRating,
-        Runtime: req.body.Runtime,
-        Genre: req.body.Genre,
-        imdbID: req.body.imdbID,
-        Plot: req.body.Plot
+        Poster: req.body.movie.Poster,
+        Title: req.body.movie.Title,
+        Rated: req.body.movie.Rated,
+        imdbRating: req.body.movie.imdbRating,
+        Runtime: req.body.movie.Runtime,
+        Genre: req.body.movie.Genre,
+        imdbID: req.body.movie.imdbID,
+        Plot: req.body.movie.Plot
     });
     watchlist.save();
     res.json(watchlist);
