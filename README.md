@@ -1,3 +1,8 @@
+# About
+MERN Stack w/ TypeScript project made with OMDb API that lets user's create a personal watch list
+
+<img src = "src/assets/preview.gif" />
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
