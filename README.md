@@ -1,3 +1,4 @@
+[![FYL Build](https://github.com/numan-7/FindYourList/actions/workflows/node.js.yml/badge.svg)](https://github.com/numan-7/FindYourList/actions/workflows/node.js.yml)
 # Find Your List
 MERN Stack w/ TypeScript project made with OMDb API that lets user's create a personal watch list
 
