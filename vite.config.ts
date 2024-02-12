@@ -14,7 +14,8 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: true,
     coverage: {
-      provider: 'v8'
+      provider: 'v8',
+      reporter: ['text', 'json', 'lcov']
     },
     exclude: [
       ...configDefaults.exclude
