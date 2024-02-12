@@ -1,13 +1,13 @@
-name: Test and Coverage with MongoDB
+name: FYL Build
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
-    branches: [main]
+    branches: [ "main" ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     services:
@@ -19,28 +19,23 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Set up Node.js ${{ matrix.node-version }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          
+
       - name: Install Dependencies
         run: npm install
 
       - name: Setup Environment Variables
         run: |
-          echo "MONGODB_URI=mongodb://localhost:27017/mytestdatabase" >> $GITHUB_ENV
+          echo "MONGODB_URI=mongodb://0.0.0.0:27017/watchlist" >> $GITHUB_ENV
       
-      - name: Run Vitest with coverage
-        run: npm run coverage
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: true
-          files: ./coverage/lcov.info
+      - name: Execute Unit Tests
+        run: npm run test
