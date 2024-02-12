@@ -1,4 +1,5 @@
 // api
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const express = require('express');
 // database
 const mongoose = require('mongoose')
@@ -16,29 +17,48 @@ mongoose.connect("mongodb://0.0.0.0:27017/watchlist")
 const Watchlist = require('./models/Watchlist')
 
 // gets all the movies in the watchlists
-app.get('/watchlist', async(req, res) => {
-    const watchlist = await Watchlist.find();
-    res.json(watchlist);
+app.get('/watchlist', async (req, res) => {
+    try {
+        const watchlist = await Watchlist.find();
+        res.status(200).json(watchlist);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-app.post('/watchlist/new', async(req, res) => {
-    const watchlist = new Watchlist({
-        Poster: req.body.movie.Poster,
-        Title: req.body.movie.Title,
-        Rated: req.body.movie.Rated,
-        imdbRating: req.body.movie.imdbRating,
-        Runtime: req.body.movie.Runtime,
-        Genre: req.body.movie.Genre,
-        imdbID: req.body.movie.imdbID,
-        Plot: req.body.movie.Plot
-    });
-    watchlist.save();
-    res.json(watchlist);
+app.post('/watchlist/new', async (req, res) => {
+    try {
+        const movie = req.body;
+        const watchlist = new Watchlist({
+            Poster: movie.Poster,
+            Title: movie.Title,
+            Rated: movie.Rated,
+            imdbRating: movie.imdbRating,
+            Runtime: movie.Runtime,
+            Genre: movie.Genre,
+            imdbID: movie.imdbID,
+            Plot: movie.Plot
+        });
+        await watchlist.save();
+        res.status(201).json(watchlist);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 });
 
-app.delete('/watchlist/delete/:id', async(req, res) => {
-    const result = await Watchlist.findByIdAndDelete(req.params.id);
-    res.json(result);
+
+app.delete('/watchlist/delete/:id', async (req, res) => {
+    try {
+        const result = await Watchlist.findByIdAndDelete(req.params.id);
+        if (!result) {
+            return res.status(404).json({ message: "Movie not found" });
+        }
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-app.listen(3001, () => console.log("Server started on 3001"));
+
+const server = app.listen(3001, () => console.log("Server started on 3001"));
+module.exports = { app, server };

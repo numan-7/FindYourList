@@ -14,7 +14,7 @@ const Movie: React.FC<MovieProps> = ({ movieInfo, inWatchlist, WatchlistPage, ha
   
   const addedElement = WatchlistPage ? (
     <>
-      <FontAwesomeIcon className="fa-circle-minus" icon={faCircleMinus} onClick={() => handleClick(movieInfo._id)} />
+      <FontAwesomeIcon data-testid="remove-icon" className="fa-circle-minus" icon={faCircleMinus} onClick={() => handleClick(movieInfo._id)} />
       <p>Remove</p>
     </>
     ) : inWatchlist ? (
@@ -23,7 +23,7 @@ const Movie: React.FC<MovieProps> = ({ movieInfo, inWatchlist, WatchlistPage, ha
       </>
     ) : (
       <>
-        <FontAwesomeIcon className="fa-circle-plus" icon={faCirclePlus} onClick={() => handleClick(movieInfo)}/>
+        <FontAwesomeIcon data-testid = "add-icon" className="fa-circle-plus" icon={faCirclePlus} onClick={() => handleClick(movieInfo)}/>
         <p>Watchlist</p>
       </>
     );

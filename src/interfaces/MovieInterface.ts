@@ -1,3 +1,4 @@
+/* v8 ignore next 40 */
 export interface MovieInterface {
     _id?: string;
     Poster: string;

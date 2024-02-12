@@ -1,6 +1,6 @@
 import React from "react";
 import Nav from '../components/Nav';
-import { faSearch, faFilm } from '@fortawesome/free-solid-svg-icons';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Movie from "../components/Movie";
 import { MovieReturnInterface } from "../interfaces/MovieInterface";
@@ -41,6 +41,7 @@ export default function Home() {
             const data = await response.json();
             setWatchlist(prevWatchlist => [...prevWatchlist, data]);
           }
+        /* v8 ignore next 3 */
         } catch (error) {
           console.error("Error:", error);
         }
@@ -58,22 +59,23 @@ export default function Home() {
           const API_KEY = import.meta.env.VITE_API_KEY;
           const movieData = await fetch(`http://www.omdbapi.com/?apikey=${API_KEY}&s=${formData.search}&page=${page}`);
           const data = await movieData.json();
-      
           if (data.totalResults > 0) {
             const moviesData = await Promise.all(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               data.Search.map(async (movie: any) => {
-                const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${movie.imdbID}`);
+                const response = await fetch(`http://www.omdbapi.com/?apikey=${API_KEY}&i=${movie.imdbID}`);
                 return response.json();
               })
             );
             setHasMoreMovies(true)
             setMovies(moviesData);
           } else {
-            if(page > 1) {
+            if(page >= 1) {
                 setHasMoreMovies(false)
             }
             alert("Nothing Found");
           }
+        /* v8 ignore next 3 */
         } catch (error) {
           console.error("Error fetching data:", error);
         }
@@ -91,6 +93,7 @@ export default function Home() {
             const nextPage = currentPage + action;
             await fetchMovies(nextPage);
             setCurrentPage(nextPage);
+        /* v8 ignore next 3 */
         } catch (error) {
             console.error("Error fetching more data:", error);
         }
@@ -99,7 +102,7 @@ export default function Home() {
     return (
         <div>
             <Nav />
-            <form onSubmit={handleSubmit}>
+            <form data-testid = "search-form" onSubmit={handleSubmit}>
                 <div className="search-container">
                     <div className="search">
                         <FontAwesomeIcon className="faSearch" icon={faSearch} />
@@ -131,7 +134,7 @@ export default function Home() {
                             <button disabled = {currentPage <= 1 ? true : false} className="load-more-btn" onClick={() => loadMoreMovies(-1)}>
                                 Prev Page
                             </button>
-                            <button className="load-more-btn" onClick={() => loadMoreMovies(1)}>
+                            <button data-testid="page-button" className="load-more-btn" onClick={() => loadMoreMovies(1)}>
                                 Next Page
                             </button>
                         </div>

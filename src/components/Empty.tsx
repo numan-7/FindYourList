@@ -6,7 +6,11 @@ const Empty: React.FC<{ type: string }> = ({ type }) => (
         {type === "home" ? (
             <div className="main-movie-container" id="main-movie-container">
                 <div className="exploring">
-                    <FontAwesomeIcon className="film-icon" icon={faFilm} />
+                    <FontAwesomeIcon 
+                        className="film-icon" 
+                        icon={faFilm} 
+                        data-testid="film-icon"
+                    />
                     <p>Start exploring</p>
                 </div>
             </div>
