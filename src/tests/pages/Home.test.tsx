@@ -4,6 +4,10 @@ import userEvent from '@testing-library/user-event';
 import Home from '../../pages/Home';
 describe('Home component', () => {
   
+  beforeAll(() => {
+    window.alert = vi.fn();
+  });
+
   beforeEach(() => {
     render( <Home />);
   });
