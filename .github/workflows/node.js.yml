@@ -10,6 +10,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: --health-cmd "mongo --eval 'db.runCommand({ping: 1})'" --health-interval 10s --health-timeout 5s --health-retries 5
+
     strategy:
       matrix:
         node-version: [18.x]
@@ -17,12 +24,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          
       - name: Install Dependencies
-        run: npm i
+        run: npm install
+        
+      - name: Setup Environment Variables
+        run: |
+          echo "MONGODB_URI=mongodb://localhost:27017/watchlist" >> $GITHUB_ENV
+      
       - name: Execute Unit Tests
         run: npm run test
+
