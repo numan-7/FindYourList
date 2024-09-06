@@ -1,6 +1,6 @@
 // api
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const express = require('express');
+const dotenv = require('dotenv').config();
 // database
 const mongoose = require('mongoose')
 const cors = require('cors')
@@ -10,7 +10,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb://0.0.0.0:27017/watchlist")
+const DB_BASE_URL = process.env.DB_BASE_URL
+
+mongoose.connect(`${DB_BASE_URL}/watchlist`)
     .then( () => console.log("DB Connection Successful"))
     .catch(console.error);
 
