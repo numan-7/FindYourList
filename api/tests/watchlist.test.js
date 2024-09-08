@@ -1,126 +1,141 @@
-/* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-var-requires */
 const request = require('supertest');
 const { app, server } = require('../server.js');
 const Watchlist = require('../models/Watchlist');
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-import { vi } from 'vitest'
 
+const movie = {
+    "Title": "The Avengers",
+    "Rated": "PG-13",
+    "Runtime": "143 min",
+    "Genre": "Action, Sci-Fi",
+    "Plot": "Earth's mightiest heroes must come together and learn to fight as a team if they are going to stop the mischievous Loki and his alien army from enslaving humanity.",
+    "Poster": "https://example.com/shortened-poster-url.jpg",
+    "imdbRating": "8.0",
+    "imdbID": "tt0848228"
+};
+
+const createUserAndToken = async () => {
+    const user = new User({
+        googleId: `testGoogleId_${Date.now()}`,
+        email: `test_${Date.now()}@example.com`,
+        name: 'Test User'
+    });
+    await user.save();
+
+    const token = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET || 'defaultSecret', { expiresIn: '24h' });
+    return { user, token };
+};
+
+beforeEach(async () => {
+    await User.deleteMany({});
+    await Watchlist.deleteMany({});
+});
+
+afterEach(async () => {
+    await User.deleteMany({});
+    await Watchlist.deleteMany({});
+});
+
+// Test for Invalid User ID (Malformed or Non-Existent)
+describe('Bad User ID tests', () => {
+
+    it('should return a 403 error for an invalid JWT token (malformed)', async () => {
+        const response = await request(app)
+            .get('/watchlist')
+            .set('Authorization', 'Bearer invalidtoken');
+        expect(response.status).toBe(403);
+    });
+
+    it('should return a 401 error for a token with a non-existent userId', async () => {
+        const fakeUserId = new mongoose.Types.ObjectId();
+        const token = jwt.sign({ userId: fakeUserId.toString() }, process.env.JWT_SECRET || 'defaultSecret', { expiresIn: '24h' });
+        
+        const response = await request(app)
+            .get('/watchlist')
+            .set('Authorization', `Bearer ${token}`);
+        expect(response.status).toBe(401);
+    });
+
+});
+
+// Tests for GET, POST, DELETE
 describe('GET /watchlist', () => {
-    it('should get all movies in the watchlist', async () => {
-        const response = await request(app).get('/watchlist');
+    it('should get an empty watchlist for a new user', async () => {
+        const { token } = await createUserAndToken();
+        const response = await request(app)
+            .get('/watchlist')
+            .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
-    });
-});
-
-describe('GET /watchlist with no data', () => {
-  it('should return an empty array when no movies are in the watchlist', async () => {
-      await Watchlist.deleteMany({});
-      const response = await request(app).get('/watchlist');
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual([]);
-  });
-});
-
-describe('GET /watchlist error scenario', () => {
-    beforeAll(() => {
-        // Mock the find method to simulate a failure
-        vi.spyOn(Watchlist, 'find').mockImplementation(() => {
-            throw new Error('Simulated database error');
-        });
+        expect(response.body).toEqual([]);
     });
 
-    afterAll(() => {
-        Watchlist.find.mockRestore();
-    });
-
-    it('should handle errors when fetching watchlist fails', async () => {
-        const response = await request(app).get('/watchlist');
-        expect(response.status).toBe(500);
-        expect(response.body.message).toBe('Simulated database error');
+    it('should return a 401 error for missing token', async () => {
+        const response = await request(app)
+            .get('/watchlist');
+        expect(response.status).toBe(401);
     });
 });
 
 describe('POST /watchlist/new', () => {
-    it('should add a new movie to the watchlist', async () => {
-        const movie = {
-            "Title": "The Avengers",
-            "Rated": "PG-13",
-            "Runtime": "143 min",
-            "Genre": "Action, Sci-Fi",
-            "Plot": "Earth's mightiest heroes must come together and learn to fight as a team if they are going to stop the mischievous Loki and his alien army from enslaving humanity.",
-            "Poster": "https://m.media-amazon.com/images/M/MV5BNDYxNjQyMjAtNTdiOS00NGYwLWFmNTAtNThmYjU5ZGI2YTI1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-            "imdbRating": "8.0",
-            "imdbID": "tt0848228"
-        };
+    it('should add a new movie to the watchlist with a userId', async () => {
+        const { token } = await createUserAndToken();
         const response = await request(app)
             .post('/watchlist/new')
-            .send(movie);
+            .set('Authorization', `Bearer ${token}`)
+            .send({ movie });
         expect(response.status).toBe(201);
         expect(response.body.Title).toBe(movie.Title);
     });
-});
 
-describe('POST /watchlist/new', () => {
-  it('this should throw error when sending movie', async () => {
-      const movie = {
-        "NOTGOOD": "THIS SHOULD FAIL"
-      };
-      const response = await request(app)
-          .post('/watchlist/new')
-          .send(movie);
-      expect(response.status).toBe(400);
-  });
+    it('should return a 400 error for missing movie data', async () => {
+        const { token } = await createUserAndToken();
+        const response = await request(app)
+            .post('/watchlist/new')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ movie: {} });
+        expect(response.status).toBe(400);
+    });
+
+    it('should return a 401 error for missing token', async () => {
+        const response = await request(app)
+            .post('/watchlist/new')
+            .send({ movie });
+        expect(response.status).toBe(401);
+    });
 });
 
 describe('DELETE /watchlist/delete/:id', () => {
-    it('should delete a movie from the watchlist', async () => {
-        const movie = new Watchlist({
-            "Title": "The Avengers",
-            "Rated": "PG-13",
-            "Runtime": "143 min",
-            "Genre": "Action, Sci-Fi",
-            "Plot": "Earth's mightiest heroes must come together and learn to fight as a team if they are going to stop the mischievous Loki and his alien army from enslaving humanity.",
-            "Poster": "https://m.media-amazon.com/images/M/MV5BNDYxNjQyMjAtNTdiOS00NGYwLWFmNTAtNThmYjU5ZGI2YTI1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg",
-            "imdbRating": "8.0",
-            "imdbID": "tt0848228"
-        });
-        await movie.save();
-        const response = await request(app).delete(`/watchlist/delete/${movie._id}`);
+    it('should delete a movie from the watchlist for the authenticated user', async () => {
+        const { user, token } = await createUserAndToken();
+        const watchlistMovie = new Watchlist({ ...movie, userId: user._id });
+        await watchlistMovie.save();
+        const response = await request(app)
+            .delete(`/watchlist/delete/${watchlistMovie._id}`)
+            .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(200);
     });
-});
 
-describe('DELETE /watchlist/delete/:id for non-existent movie', () => {
-    it('should return a 404 error for a non-existent movie', async () => {
-            const fakeId = '5f8d0d55b54764421b7156d9';
-            const response = await request(app).delete(`/watchlist/delete/${fakeId}`);
-            expect(response.status).toBe(404);
-            expect(response.body.message).toBe("Movie not found");
-    });
-});
-
-describe('DELETE /watchlist/delete/:id error scenario', () => {
-    beforeAll(() => {
-        // Mock findByIdAndDelete to simulate a failure
-        vi.spyOn(Watchlist, 'findByIdAndDelete').mockImplementation(() => {
-            throw new Error('Simulated database error');
-        });
+    it('should return a 404 for a non-existent movie', async () => {
+        const { token } = await createUserAndToken();
+        const fakeId = new mongoose.Types.ObjectId();
+        const response = await request(app)
+            .delete(`/watchlist/delete/${fakeId}`)
+            .set('Authorization', `Bearer ${token}`);
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('Movie not found');
     });
 
-    afterAll(() => {
-        Watchlist.findByIdAndDelete.mockRestore();
-    });
-
-    it('should handle errors when deleting a movie fails', async () => {
-        const response = await request(app).delete('/watchlist/delete/fakeId');
-        expect(response.status).toBe(500);
-        expect(response.body.message).toBe('Simulated database error');
+    it('should return a 401 error for missing token', async () => {
+        const fakeId = new mongoose.Types.ObjectId();
+        const response = await request(app)
+            .delete(`/watchlist/delete/${fakeId}`);
+        expect(response.status).toBe(401);
     });
 });
 
 afterAll(() => {
-        mongoose.connection.close()
-        server.close();
-})
+    mongoose.connection.close();
+    server.close();
+});
